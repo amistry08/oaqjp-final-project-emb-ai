@@ -9,28 +9,55 @@ def emotion_detector(text_to_analyse):
     response = requests.post(url, json=user_input, headers=headers)
 
     formatted_response = json.loads(response.text)
-    emotions = formatted_response['emotionPredictions'][0]['emotion']
+    response_obj = {}
 
-    anger_score = emotions['anger']
-    disgust_score = emotions['disgust']
-    fear_score = emotions['fear']
-    joy_score = emotions['joy']
-    sadness_score = emotions['sadness']
-    max_score = 0
-    dominant_emotion = None
+    if response.status_code == 200:
+        if 'emotionPredictions' in formatted_response and len(formatted_response['emotionPredictions']) > 0:
+            emotions = formatted_response['emotionPredictions'][0]['emotion']
 
-    for score in emotions:
-        max_score = max(emotions[score], max_score)
-        if(max_score == emotions[score]):
-             dominant_emotion = score
+            anger_score = emotions.get('anger', 0)
+            disgust_score = emotions.get('disgust', 0)
+            fear_score = emotions.get('fear', 0)
+            joy_score = emotions.get('joy', 0)
+            sadness_score = emotions.get('sadness', 0)
+            max_score = 0
+            dominant_emotion = None
 
-    response_obj = {
-        'anger': anger_score,
-        'disgust': disgust_score,
-        'fear': fear_score,
-        'joy': joy_score,
-        'sadness': sadness_score,
-        'dominant_emotion': dominant_emotion
-    }
+            for score in emotions:
+                max_score = max(emotions[score], max_score)
+                if(max_score == emotions[score]):
+                    dominant_emotion = score
 
-    return response_obj
+            response_obj = {
+                'anger': anger_score,
+                'disgust': disgust_score,
+                'fear': fear_score,
+                'joy': joy_score,
+                'sadness': sadness_score,
+                'dominant_emotion': dominant_emotion
+            }
+        else:
+            response_obj = {
+                    'anger': None,
+                    'disgust': None,
+                    'fear': None,
+                    'joy': None,
+                    'sadness': None,
+                    'dominant_emotion': None
+            }
+        return response_obj
+        
+
+    elif response.status_code == 500:
+        
+        response_obj = {
+            'anger': None,
+            'disgust': None,
+            'fear': None,
+            'joy': None,
+            'sadness': None,
+            'dominant_emotion': None
+        }
+        return response_obj
+
+    
